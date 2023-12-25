@@ -16,11 +16,7 @@ const {
 } = require("../verify/doctor");
 
 //获取活动数据的路由
-router.get(
-  "/allDoctor",
-  expressJoi(VerifyDoctor),
-  doctorController.getAllDoctors
-);
+router.get("/allDoctor", doctorController.getAllDoctors);
 //新增医生的路由
 router.post("/addDoctor", expressJoi(VerifyDoctor), doctorController.addDoctor);
 //修改医生信息
@@ -36,5 +32,8 @@ router.post(
   expressJoi(VerifyDeleteDoctor),
   doctorController.deleteDoctor
 );
+
+//模糊查询
+router.post("/findDoctor", doctorController.searchDoctor);
 
 module.exports = router;

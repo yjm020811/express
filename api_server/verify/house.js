@@ -5,7 +5,7 @@ const joi = require("joi");
 const username = joi.string().required();
 const price = joi.string().required();
 const workTime = joi.string().required();
-const avatar = joi.string().required();
+const avatar = joi.string().optional();
 
 //定义id的校验规则
 const id = joi.number().integer().min(1).required();
@@ -14,8 +14,7 @@ exports.VerifyCleaners = {
   body: {
     username,
     price,
-    workTime,
-    avatar
+    workTime
   }
 };
 

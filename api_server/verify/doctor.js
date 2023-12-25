@@ -5,7 +5,7 @@ const joi = require("joi");
 const username = joi.string().required();
 const treatmentTime = joi.string().required();
 const affiliatedHospital = joi.string().required();
-const avatar = joi.string().required();
+const price = joi.string().required();
 //定义id的校验规则
 const id = joi.number().integer().min(1).required();
 
@@ -13,28 +13,26 @@ const id = joi.number().integer().min(1).required();
 exports.VerifyDoctor = {
   body: {
     username,
+    price,
     treatmentTime,
-    avatar,
     affiliatedHospital
   }
 };
 
 // 修改医生的验证规则
 exports.VerifyChangeDoctor = {
-  body:{
+  body: {
     id,
     username,
+    price,
     treatmentTime,
-    avatar,
     affiliatedHospital
   }
-}
+};
 
 //删除医生的验证规则
 exports.VerifyDeleteDoctor = {
-  body:{
+  body: {
     id
   }
-}
-
-
+};

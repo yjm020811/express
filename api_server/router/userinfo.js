@@ -8,7 +8,7 @@ const userInfoController = require("../controller/userinfo");
 //导入验证数据的中间件
 const expressJoi = require("@escook/express-joi");
 //导入需要验证的规则对象
-const { VerifyUpdate, VerifyPwd, VerifyAvatar } = require("../verify/user");
+const { VerifyUpdate, VerifyPwd } = require("../verify/user");
 
 //获取用户基本信息
 router.get("/userinfo", userInfoController.getUserInfo);

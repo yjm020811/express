@@ -3,12 +3,26 @@ const db = require("../db/index");
 
 //获取所有新闻的处理函数
 exports.getAllNews = (req, res) => {
-  const sql = "select * from news";
+  let sql = `SELECT * FROM news`;
+
+  if (req.query.limit) {
+    const limit = parseInt(req.query.limit);
+    const page = req.query.page ? parseInt(req.query.page) : 1;
+    const offset = (page - 1) * limit;
+    sql += ` LIMIT ${offset}, ${limit}`;
+  }
+
   db.query(sql, (err, results) => {
-    //失败
-    if (err) return res.send({ code: 0, msg: "获取新闻数据失败" });
-    //成功
-    res.send({ code: 200, message: "获取新闻数据成功", data: results });
+    if (err) {
+      return res.send({ code: 0, msg: "获取新闻数据失败", error: err });
+    }
+
+    res.send({
+      code: 200,
+      message: "获取新闻数据成功",
+      total: results.length,
+      data: results
+    });
   });
 };
 
@@ -24,7 +38,7 @@ exports.addNews = (req, res) => {
     } else {
       // 执行插入活动的sql语句
       const sql =
-        "insert into news (newsName,newsContent,img,releaseTime) values  (?,?,?,?)";
+        "insert into news (newsName,newsContent,img,releaseTime) values  (?,?,?,NOW())";
 
       // 执行插入活动的sql语句
       db.query(
@@ -110,4 +124,45 @@ exports.deleteNews = (req, res) => {
     }
     return res.status(200).json({ code: 200, msg: "删除新闻信息成功" });
   });
+};
+
+// 根据名字查询
+// 假设这是一个 Express.js 路由处理程序，并且在路由中使用了 req 和 res 对象
+exports.findNewsByName = (req, res) => {
+  // 定义模糊查询sql
+  let querySql = "SELECT * FROM news";
+
+  // 如果 req.body.newsName 不为空，添加 WHERE 子句进行模糊查询
+  if (req.body.newsName && req.body.newsName.trim() !== "") {
+    querySql += " WHERE newsName LIKE ?";
+    // 执行模糊查询sql，使用参数化查询防止 SQL 注入攻击
+    db.query(querySql, [`%${req.body.newsName}%`], (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ code: 0, msg: "查询新闻失败" });
+      }
+      if (results.length === 0) {
+        return res.status(200).json({ code: 201, msg: "没有搜索到对应的新闻" });
+      }
+
+      return res
+        .status(200)
+        .json({ code: 200, msg: "查询新闻成功", data: results });
+    });
+  } else {
+    // 如果 req.body.newsName 为空，直接返回表中所有数据
+    db.query(querySql, (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ code: 0, msg: "查询新闻失败" });
+      }
+      if (results.length === 0) {
+        return res.status(200).json({ code: 201, msg: "新闻表中无数据" });
+      }
+
+      return res
+        .status(200)
+        .json({ code: 200, msg: "查询新闻成功", data: results });
+    });
+  }
 };

@@ -38,4 +38,28 @@ router.post(
   cleanController.deleteCleaners
 );
 
+router.post("/findCleaner", cleanController.findCleaner);
+
+// 关于multer的配置
+const multer = require("multer");
+const path = require("path");
+const storage = multer.diskStorage({
+  //文件保存路径
+  destination: function (req, file, cb) {
+    cb(null, "./public/images/");
+  },
+  // 文件名
+  filename: function (req, file, cb) {
+    cb(
+      null,
+      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
+    );
+  }
+});
+// single("img"); 支持一演上传一张图，请求体里面的 参数名img，参数的值 图片
+const upload = multer({ storage: storage }).single("img");
+
+// 添加家政的头像上传
+router.post("/upload", upload, cleanController.uploadAvatar);
+
 module.exports = router;

@@ -34,4 +34,6 @@ router.post(
   newsController.deleteNews
 );
 
+router.post("/findNews", newsController.findNewsByName);
+
 module.exports = router;

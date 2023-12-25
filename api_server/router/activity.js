@@ -39,4 +39,7 @@ router.post(
   activityController.deleteActivity
 );
 
+//活动名称模糊查询
+router.post("/searchActivity", activityController.searchActivity);
+
 module.exports = router;
