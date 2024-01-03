@@ -166,3 +166,30 @@ exports.findNewsByName = (req, res) => {
     });
   }
 };
+
+exports.findNewsById = (req, res) => {
+  // 确保请求中包含要查询的新闻ID
+  if (!req.query.newsId) {
+    return res.status(400).json({ code: 0, msg: "未提供新闻ID" });
+  }
+
+  // 定义查询指定ID的新闻的 SQL 语句
+  let querySql = "SELECT * FROM news WHERE id = ?";
+
+  // 执行 SQL 查询，并使用参数化查询防止 SQL 注入攻击
+  db.query(querySql, [req.query.newsId], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ code: 0, msg: "查询新闻失败" });
+    }
+    if (results.length === 0) {
+      return res.status(200).json({ code: 201, msg: "没有找到对应的新闻" });
+    }
+
+    return res
+      .status(200)
+      .json({ code: 200, msg: "查询新闻成功", data: results[0] });
+    // 注意：这里假设只有一条符合条件的新闻数据，所以直接返回 results[0]
+    // 如果可能存在多条符合条件的新闻数据，需要考虑返回一个数组 results
+  });
+};

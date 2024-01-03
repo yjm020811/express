@@ -36,4 +36,6 @@ router.post(
 
 router.post("/findNews", newsController.findNewsByName);
 
+router.get("/findNewsById", newsController.findNewsById);
+
 module.exports = router;

@@ -21,8 +21,8 @@ const config = require("./config");
 
 app.use(
   expressJWT({ secret: config.jwtSecretKey, algorithms: ["HS256"] }).unless({
-    //没有身份认证拿到token就只能访问以api开头的接口
-    path: [/^\/api\//]
+    //没有身份认证拿到token就只能访问以api/my开头的接口
+    path: [/^\/api\//, /^\/my\//]
   })
 );
 
@@ -44,9 +44,13 @@ app.use("/my/house", houseRouter);
 //导入并使用新闻的路由模块
 const newsRouter = require("./router/news");
 app.use("/my/news", newsRouter);
+//导入老年用户的路由模块
+const oldUser = require("./router/olduser");
+app.use("/my/olduser", oldUser);
 
 //定义错误中间件
 app.use((err, req, res, next) => {
+  console.log(err);
   if (err instanceof joi.ValidationError)
     return res.send({ code: 0, msg: "数据校验失败" });
   if (err.name === "UnauthorizedError")

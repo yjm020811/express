@@ -8,9 +8,8 @@ exports.getUserInfo = (req, res) => {
   //定义查询用户信息的sql语句
   const sql = "select username,phone,avatar from admin where id = ?";
   //调用db.query( )执行sql语句
-  db.query(sql, req.auth.id, (err, result) => {
+  db.query(sql, req.query.id, (err, result) => {
     //执行sql失败
-    console.log(req);
     if (err) return res.send({ code: 0, msg: "查询管理员信息失败" });
     //执行sql成功,但查询结果为空
     if (result.length !== 1) res.send({ code: 0, msg: "没有查询到该管理员" });
