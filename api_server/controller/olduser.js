@@ -1,5 +1,83 @@
 //导入数据库操作模块
 const db = require("../db/index");
+const request = require("request");
+var WXBizDataCrypt = require("../public/WXBizDataCrypt");
+
+//全局变量
+let sessionKey = null;
+let openid = null;
+
+// 用户微信登录
+exports.loginByWechat = (req, res) => {
+  const { code } = req.body;
+
+  // 调用微信API获取用户信息
+  const wxAppId = "wxf2795e193b6c5d02";
+  const wxAppSecret = "5e1455f49134b7226f20a33d3912090a";
+  const wxLoginUrl = `https://api.weixin.qq.com/sns/jscode2session?appid=${wxAppId}&secret=${wxAppSecret}&js_code=${code}&grant_type=authorization_code`;
+  request(wxLoginUrl, (error, response, body) => {
+    if (response.statusCode == 200) {
+      sessionKey = JSON.parse(body).session_key;
+      openid = JSON.parse(body).openid;
+      return res.status(200).json({
+        code: 200,
+        message: "登录成功",
+        openid: openid,
+        sessionKey: sessionKey
+      });
+    }
+  });
+};
+
+// 获取用户个人信息
+exports.getUserInfo = (req, res) => {
+  let reqData = req.body;
+  let bizDataCrypt = new WXBizDataCrypt("wxf2795e193b6c5d02", sessionKey);
+
+  const encryptedDataBuffer = Buffer.from(reqData.encryptedData, "base64");
+  const ivBuffer = Buffer.from(reqData.iv, "base64");
+
+  const data = bizDataCrypt.decryptData(encryptedDataBuffer, ivBuffer);
+  console.log(data);
+  return res.status(200).json({
+    code: 200,
+    message: "获取用户信息成功",
+    data: data
+  });
+};
+
+//将获取到的用户信息存储到数据库
+exports.saveUserInfo = (req, res) => {
+  const isExist = "select * from users where nickName = ?";
+  db.query(
+    isExist,
+    [req.body.phoneNumber, req.body.avatar, req.body.nickName],
+    (err, result) => {
+      if (err) {
+        return res.status(500).json({ message: "查询用户时发生错误" });
+      }
+
+      if (result.length > 0) {
+        // 用户已存在，发送相应消息
+        return res.status(409).json({ message: "用户已存在" });
+      }
+      // 如果用户不存在
+      const sql =
+        "INSERT INTO users (phoneNumber,avatar,nickName) VALUES(?,?,?)";
+      db.query(
+        sql,
+        [req.body.phoneNumber, req.body.avatar, req.body.nickName],
+        (err) => {
+          if (err) {
+            return res.status(500).json({ message: "保存用户信息时发生错误" });
+          }
+          return res.status(200).json({ message: "用户信息保存成功" });
+        }
+      );
+    }
+  );
+  console.log(req.body);
+};
 
 // 用户参加活动的处理函数
 exports.joinActivity = (req, res) => {

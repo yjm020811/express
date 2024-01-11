@@ -20,4 +20,13 @@ router.post(
 // 查看自己所参加的活动
 router.post("/findJoinAct", userController.getUserActivities);
 
+// 用户微信登录
+router.post("/wxlogin", userController.loginByWechat);
+
+// 获取用户个人信息
+router.post("/getProfile", userController.getUserInfo);
+
+// 将自己的信息存储到数据库
+router.post("/saveProfile", userController.saveUserInfo);
+
 module.exports = router;
