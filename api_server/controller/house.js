@@ -124,9 +124,9 @@ exports.deleteCleaners = (req, res) => {
 
 // 上传工作照avatar的处理函数
 exports.uploadAvatar = (req, res) => {
-  console.log(req.body);
   let file = req.file; // 图片对象
-  let avatar = "/images/" + file.filename; // 图片名称
+  let avatarLat = "/images/" + file.filename; // 图片名称
+  let avatar = `http://localhost:3000${avatarLat}`;
   let id = req.body.id;
 
   const selectSql = "SELECT * FROM cleaners WHERE id = ?";
@@ -134,30 +134,23 @@ exports.uploadAvatar = (req, res) => {
     if (err) {
       return res.status(500).json({ code: 0, msg: "获取家政数据失败" });
     } else {
-      console.log(results);
       if (results.length > 0) {
         let userAvatar = results[0].avatar;
+        // 这是原始的照片
 
-        if (!userAvatar || userAvatar === "") {
-          // 如果用户没有 avatar 或者 avatar 为空，则将上传的图片作为新的 avatar
-          avatar = "/images/default.jpg"; // 设置默认头像
-          const updateSql = "UPDATE cleaners SET avatar = ? WHERE id = ?";
-          db.query(updateSql, [avatar, id], (updateErr, updateResults) => {
-            if (updateErr) {
-              return res.status(500).json({ code: 0, msg: "更新家政数据失败" });
-            }
-            return res.status(200).json({
-              code: 200,
-              msg: "上传图片成功，并设置为用户头像",
-              data: { avatar }
-            });
+        const updateSql = "UPDATE cleaners SET avatar = ? WHERE id = ?";
+        db.query(updateSql, [avatar, id], (updateErr, updateResults) => {
+          if (updateErr) {
+            return res.status(500).json({ code: 0, msg: "更新家政数据失败" });
+          }
+
+          // 返回成功的响应
+          return res.status(200).json({
+            code: 200,
+            msg: "上传图片成功，并替换用户头像",
+            data: { avatarUrl: avatar }
           });
-        } else {
-          // 如果用户已经有 avatar，则替换为新上传的图片
-          // 这里需要删除旧的图片并更新数据库中的 avatar
-          // 同时注意处理文件删除操作及错误处理
-          // 您需要补充这部分代码
-        }
+        });
       } else {
         return res.status(404).json({ code: 0, msg: "未找到对应用户" });
       }
@@ -165,21 +158,6 @@ exports.uploadAvatar = (req, res) => {
   });
 };
 
-//根据用户名模糊查询
-// exports.findCleaner = (req, res) => {
-//   console.log(req.body);
-//   let username = req.body.username;
-//   let selectSql = "SELECT * FROM cleaners WHERE name LIKE ?";
-//   db.query(selectSql, ["%" + username + "%"], (err, results) => {
-//     if (err) {
-//       console.log(err);
-//       return res.status(500).json({ code: 0, msg: "获取家政数据失败" });
-//     }
-//     return res
-//       .status(200)
-//       .json({ code: 200, msg: "获取家政数据成功", data: results });
-//   });
-// };
 //根据活动名称模糊查询活动信息
 exports.findCleaner = (req, res) => {
   // 定义模糊查询sql

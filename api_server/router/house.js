@@ -57,7 +57,7 @@ const storage = multer.diskStorage({
   }
 });
 // single("img"); 支持一演上传一张图，请求体里面的 参数名img，参数的值 图片
-const upload = multer({ storage: storage }).single("img");
+const upload = multer({ storage }).single("img");
 
 // 添加家政的头像上传
 router.post("/upload", upload, cleanController.uploadAvatar);

@@ -2,6 +2,7 @@
 const express = require("express");
 //创建服务器的实例对象
 const app = express();
+const path = require("path");
 
 //导入验证数据的中间件
 const joi = require("joi");
@@ -16,15 +17,15 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 //一定要在路由之前配置解析token的中间件
-const { expressjwt: expressJWT } = require("express-jwt");
-const config = require("./config");
+// const { expressjwt: expressJWT } = require("express-jwt");
+// const config = require("./config");
 
-app.use(
-  expressJWT({ secret: config.jwtSecretKey, algorithms: ["HS256"] }).unless({
-    //没有身份认证拿到token就只能访问以api/my开头的接口
-    path: [/^\/api\//, /^\/my\//]
-  })
-);
+// app.use(
+//   expressJWT({ secret: config.jwtSecretKey, algorithms: ["HS256"] }).unless({
+//     //没有身份认证拿到token就只能访问以api/my开头的接口
+//     path: [/^\/api\//, /^\/my\//]
+//   })
+// );
 
 // 导入并使用user路由模块
 const userRouter = require("./router/user");
@@ -47,6 +48,8 @@ app.use("/my/news", newsRouter);
 //导入老年用户的路由模块
 const oldUser = require("./router/olduser");
 app.use("/my/olduser", oldUser);
+//  读取本地图片
+app.use(express.static(path.join(__dirname, "public")));
 
 //定义错误中间件
 app.use((err, req, res, next) => {

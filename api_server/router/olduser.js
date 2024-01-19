@@ -28,5 +28,13 @@ router.post("/getProfile", userController.getUserInfo);
 
 // 将自己的信息存储到数据库
 router.post("/saveProfile", userController.saveUserInfo);
+// 管理员获取用户列表
+router.get("/getUserList", userController.getOldUseList);
+
+// 修改个人信息
+router.post("/editProfile", userController.editUserInfo);
+
+// 删除个人信息
+router.post("/deleteProfile", userController.deleteUserById);
 
 module.exports = router;

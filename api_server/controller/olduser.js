@@ -16,6 +16,7 @@ exports.loginByWechat = (req, res) => {
   const wxAppSecret = "5e1455f49134b7226f20a33d3912090a";
   const wxLoginUrl = `https://api.weixin.qq.com/sns/jscode2session?appid=${wxAppId}&secret=${wxAppSecret}&js_code=${code}&grant_type=authorization_code`;
   request(wxLoginUrl, (error, response, body) => {
+    console.log(response);
     if (response.statusCode == 200) {
       sessionKey = JSON.parse(body).session_key;
       openid = JSON.parse(body).openid;
@@ -48,35 +49,55 @@ exports.getUserInfo = (req, res) => {
 
 //将获取到的用户信息存储到数据库
 exports.saveUserInfo = (req, res) => {
-  const isExist = "select * from users where nickName = ?";
-  db.query(
-    isExist,
-    [req.body.phoneNumber, req.body.avatar, req.body.nickName],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({ message: "查询用户时发生错误" });
-      }
-
-      if (result.length > 0) {
-        // 用户已存在，发送相应消息
-        return res.status(409).json({ message: "用户已存在" });
-      }
-      // 如果用户不存在
-      const sql =
-        "INSERT INTO users (phoneNumber,avatar,nickName) VALUES(?,?,?)";
-      db.query(
-        sql,
-        [req.body.phoneNumber, req.body.avatar, req.body.nickName],
-        (err) => {
-          if (err) {
-            return res.status(500).json({ message: "保存用户信息时发生错误" });
-          }
-          return res.status(200).json({ message: "用户信息保存成功" });
-        }
-      );
+  const isExistQuery = "SELECT * FROM users WHERE nickName = ?";
+  db.query(isExistQuery, [req.body.nickName], (err, result) => {
+    if (err) {
+      return res.status(500).json({ message: "查询用户时发生错误" });
     }
-  );
-  console.log(req.body);
+
+    if (result.length > 0) {
+      const userId = result[0].id; // 假设用户表中的 ID 字段是 'id'
+
+      return res.status(200).json({
+        message: "用户已存在",
+        userId: userId // 返回用户 ID
+      });
+    }
+
+    // 如果用户不存在
+    const insertQuery =
+      "INSERT INTO users (phoneNumber, avatar, nickName) VALUES (?, ?, ?)";
+    db.query(
+      insertQuery,
+      [req.body.phoneNumber, req.body.avatar, req.body.nickName],
+      (err, results) => {
+        if (err) {
+          return res.status(500).json({ message: "保存用户信息时发生错误" });
+        }
+        // console.log(res);
+        const id = results.insertId;
+        console.log(id);
+        return res.status(200).json({
+          message: "用户信息保存成功",
+          userId: id // 将用户 ID 添加到响应中
+        });
+      }
+    );
+  });
+};
+
+// 获取用户的列表
+exports.getOldUseList = (req, res) => {
+  // 查询数据库中的用户列表
+  const query = `SELECT * FROM users`;
+  db.query(query, (err, result) => {
+    if (err) {
+      console.error("Error retrieving user list:", err);
+      return res.status(500).json({ message: "Error retrieving user list" });
+    }
+    console.log(result);
+    return res.send({ code: 200, data: result });
+  });
 };
 
 // 用户参加活动的处理函数
@@ -145,5 +166,55 @@ exports.getUserActivities = (req, res) => {
 
       return res.status(200).json({ code: 200, activities: results });
     });
+  });
+};
+
+// 编辑用户的信息
+exports.editUserInfo = (req, res) => {
+  const { id, realName, phoneNumber, age, gender, address, healthStatus } =
+    req.body;
+
+  // 检查是否提供了 userId
+  if (!id) {
+    return res.status(400).json({ code: 400, message: "未提供用户标识" });
+  }
+
+  const query = `UPDATE users SET realName = ?, phoneNumber = ?,age = ?, gender = ?, address = ?, healthStatus = ? WHERE id = ?`;
+
+  db.query(
+    query,
+    [realName, phoneNumber, age, gender, address, healthStatus, id],
+    (error, results) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).json({ code: 500, message: "服务器错误" });
+      }
+      if (results.affectedRows === 0) {
+        return res.status(404).json({ code: 404, message: "用户不存在" });
+      }
+      return res.status(200).json({ code: 200, message: "用户信息更新成功" });
+    }
+  );
+};
+
+// 根据用户id删除用户
+exports.deleteUserById = (req, res) => {
+  const userId = req.body.id;
+
+  if (!userId) {
+    return res.status(400).json({ code: 400, message: "未提供用户标识" });
+  }
+
+  const query = "DELETE FROM users WHERE id = ?";
+
+  db.query(query, [userId], (error, results) => {
+    if (error) {
+      console.error(error);
+      return res.status(500).json({ code: 500, message: "服务器错误" });
+    }
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ code: 404, message: "用户不存在" });
+    }
+    return res.status(200).json({ code: 200, message: "用户删除成功" });
   });
 };
