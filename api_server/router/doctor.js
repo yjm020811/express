@@ -2,6 +2,25 @@
 const express = require("express");
 const router = express.Router();
 
+// 关于multer的配置
+const multer = require("multer");
+const path = require("path");
+const storage = multer.diskStorage({
+  //文件保存路径
+  destination: function (req, file, cb) {
+    cb(null, "./public/images/");
+  },
+  // 文件名
+  filename: function (req, file, cb) {
+    cb(
+      null,
+      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
+    );
+  }
+});
+// single("img"); 支持一演上传一张图，请求体里面的 参数名img，参数的值 图片
+const upload = multer({ storage }).single("img");
+
 //导入医生处理函数
 const doctorController = require("../controller/doctor");
 
@@ -35,5 +54,11 @@ router.post(
 
 //模糊查询
 router.post("/findDoctor", doctorController.searchDoctor);
+
+// 修改医生头像
+router.post("/upload", upload, doctorController.uploadPhoto);
+
+//添加新医生的头像
+router.post("/addPhoto", upload, doctorController.uploadDoctorAva);
 
 module.exports = router;

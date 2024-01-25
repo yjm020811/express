@@ -49,16 +49,15 @@ app.use("/my/news", newsRouter);
 const oldUser = require("./router/olduser");
 app.use("/my/olduser", oldUser);
 //  读取本地图片
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public/")));
 
 //定义错误中间件
 app.use((err, req, res, next) => {
-  console.log(err);
   if (err instanceof joi.ValidationError)
     return res.send({ code: 0, msg: "数据校验失败" });
   if (err.name === "UnauthorizedError")
     return res.send({ code: 0, msg: "身份认证失败" });
-  res.send({ code: 0, msg: "未知的错误" });
+  res.send({ code: 500, msg: err.message });
 });
 
 //启动服务器

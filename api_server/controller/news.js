@@ -2,7 +2,7 @@
 const db = require("../db/index");
 
 //获取所有新闻的处理函数
-exports.getAllNews = (req, res) => {
+exports.getAllNews = (req, res, next) => {
   let sql = `SELECT * FROM news`;
 
   if (req.query.limit) {
@@ -12,25 +12,28 @@ exports.getAllNews = (req, res) => {
     sql += ` LIMIT ${offset}, ${limit}`;
   }
 
-  db.query(sql, (err, results) => {
-    if (err) {
-      return res.send({ code: 0, msg: "获取新闻数据失败", error: err });
-    }
+  try {
+    db.query(sql, (err, results) => {
+      if (err) {
+        return res.send({ code: 0, msg: "获取新闻数据失败", error: err });
+      }
 
-    res.send({
-      code: 200,
-      message: "获取新闻数据成功",
-      total: results.length,
-      data: results
+      res.send({
+        code: 200,
+        message: "获取新闻数据成功",
+        total: results.length,
+        data: results
+      });
     });
-  });
+  } catch (error) {
+    next(error);
+  }
 };
 
 // 新增新闻的处理函数
-exports.addNews = (req, res) => {
+exports.addNews = (req, res, next) => {
   const sql = "select * from news where newsName=?";
   db.query(sql, [req.body.newsName], (err, results) => {
-    console.log(results);
     if (err) return res.send({ code: 0, msg: "新增新闻失败" });
     // 成功
     if (results.length > 0) {
@@ -41,24 +44,28 @@ exports.addNews = (req, res) => {
         "insert into news (newsName,newsContent,img,releaseTime) values  (?,?,?,NOW())";
 
       // 执行插入活动的sql语句
-      db.query(
-        sql,
-        [
-          req.body.newsName,
-          req.body.newsContent,
-          req.body.img,
-          req.body.releaseTime
-        ],
-        (err, results) => {
-          // 失败
-          if (err) {
-            console.log(err);
-            return res.send({ code: 0, msg: "新增新闻失败" });
+      try {
+        db.query(
+          sql,
+          [
+            req.body.newsName,
+            req.body.newsContent,
+            req.body.img,
+            req.body.releaseTime
+          ],
+          (err, results) => {
+            // 失败
+            if (err) {
+              console.log(err);
+              return res.send({ code: 0, msg: "新增新闻失败" });
+            }
+            // 成功
+            return res.send({ code: 200, msg: "新增新闻成功" });
           }
-          // 成功
-          return res.send({ code: 200, msg: "新增新闻成功" });
-        }
-      );
+        );
+      } catch (error) {
+        next(error);
+      }
     }
   });
 };
@@ -191,5 +198,18 @@ exports.findNewsById = (req, res) => {
       .json({ code: 200, msg: "查询新闻成功", data: results[0] });
     // 注意：这里假设只有一条符合条件的新闻数据，所以直接返回 results[0]
     // 如果可能存在多条符合条件的新闻数据，需要考虑返回一个数组 results
+  });
+};
+
+// 上传新闻的图片
+exports.uploadNewsImage = (req, res) => {
+  const file = req.file; // 图片对象
+  const avatarUrl = `http://localhost:3000/images/${file.filename}`;
+
+  // 返回成功的响应，包含上传的新头像地址
+  return res.status(200).json({
+    code: 200,
+    msg: "上传图片成功",
+    data: { avatarUrl }
   });
 };

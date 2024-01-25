@@ -8,6 +8,7 @@ const affiliatedHospital = joi.string().required();
 const price = joi.string().required();
 //定义id的校验规则
 const id = joi.number().integer().min(1).required();
+const avatar = joi.string().required();
 
 //校验规则
 exports.VerifyDoctor = {
@@ -15,7 +16,8 @@ exports.VerifyDoctor = {
     username,
     price,
     treatmentTime,
-    affiliatedHospital
+    affiliatedHospital,
+    avatar
   }
 };
 

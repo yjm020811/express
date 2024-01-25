@@ -14,7 +14,8 @@ exports.VerifyCleaners = {
   body: {
     username,
     price,
-    workTime
+    workTime,
+    avatar
   }
 };
 
@@ -23,8 +24,7 @@ exports.VerifyUpdateCleaners = {
     id,
     username,
     price,
-    workTime,
-    avatar
+    workTime
   }
 };
 

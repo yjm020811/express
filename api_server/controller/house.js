@@ -29,6 +29,7 @@ exports.getAllCleaners = (req, res) => {
 
 // 新增家政的处理函数
 exports.addCleaners = (req, res) => {
+  console.log(req.body);
   const sql = "select * from cleaners where username=?";
   db.query(sql, [req.body.username], (err, results) => {
     console.log(results);
@@ -39,12 +40,11 @@ exports.addCleaners = (req, res) => {
     } else {
       // 执行插入活动的sql语句
       const sql =
-        "insert into cleaners (username,price,workTime) values  (?,?,?)";
-
+        "insert into cleaners (username,price,workTime,avatar) values  (?,?,?,?)";
       // 执行插入活动的sql语句
       db.query(
         sql,
-        [req.body.username, req.body.price, req.body.workTime],
+        [req.body.username, req.body.price, req.body.workTime, req.body.avatar],
         (err, results) => {
           // 失败
           if (err) {
@@ -66,13 +66,7 @@ exports.updateCleaners = (req, res) => {
   // 执行sql语句
   db.query(
     sql,
-    [
-      req.body.id,
-      req.body.username,
-      req.body.price,
-      req.body.workTime,
-      req.body.avatar
-    ],
+    [req.body.id, req.body.username, req.body.price, req.body.workTime],
     (err, results) => {
       if (err) {
         console.log(err);
@@ -84,17 +78,11 @@ exports.updateCleaners = (req, res) => {
 
       //  定义更新sql
       const updateSql =
-        "UPDATE cleaners SET username=?, price=?, workTime=?, avatar=? WHERE id=?";
+        "UPDATE cleaners SET username=?, price=?, workTime=? WHERE id=?";
       // 执行更新操作
       db.query(
         updateSql,
-        [
-          req.body.username,
-          req.body.price,
-          req.body.workTime,
-          req.body.avatar,
-          req.body.id
-        ],
+        [req.body.username, req.body.price, req.body.workTime, req.body.id],
         (err, updateResults) => {
           if (err || updateResults.affectedRows !== 1) {
             console.log(err);
@@ -155,6 +143,19 @@ exports.uploadAvatar = (req, res) => {
         return res.status(404).json({ code: 0, msg: "未找到对应用户" });
       }
     }
+  });
+};
+
+// 上传家政工作人员图片
+exports.uploadCleanerAvatar = (req, res) => {
+  const file = req.file; // 图片对象
+  const avatarUrl = `http://localhost:3000/images/${file.filename}`;
+
+  // 返回成功的响应，包含上传的新头像地址
+  return res.status(200).json({
+    code: 200,
+    msg: "上传图片成功",
+    data: { avatarUrl }
   });
 };
 

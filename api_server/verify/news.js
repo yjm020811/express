@@ -4,7 +4,7 @@ const joi = require("joi");
 //定义分类名字和别名的校验规则
 const newsName = joi.string().required();
 const newsContent = joi.string().required();
-const img = joi.string().required();
+const img = joi.string().optional();
 const releaseTime = joi.date().required();
 
 //定义id的校验规则
