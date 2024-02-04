@@ -20,6 +20,18 @@ router.post(
 // 查看自己所参加的活动
 router.post("/findJoinAct", userController.getUserActivities);
 
+// 预约医生
+router.post("/bookDoctor", userController.bookDoctorAppointment);
+
+// 查看自己预约的医生
+router.post("/findbookDoctor", userController.findbookDoctor);
+
+// 预约家政
+router.post("/bookClean", userController.bookHomeAppointment);
+
+// 查看自己预约的家政
+router.post("/findbookClean", userController.findbookHome);
+
 // 用户微信登录
 router.post("/wxlogin", userController.loginByWechat);
 
